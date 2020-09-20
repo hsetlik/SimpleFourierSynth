@@ -83,7 +83,7 @@ public:
     }
     void setNumPartials(std::atomic<float>* value)
     {
-        proc.numPartials = (int) *value;
+        proc.audPartials = (int) *value;
     }
     
     void startNote (int midiNoteNumber,
@@ -91,10 +91,11 @@ public:
                     juce::SynthesiserSound *sound,
                     int currentPitchWheelPosition)
     {
-        proc.fundamental = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
+        proc.setPitch(juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber));
         proc.mEnv.trigger = 1;
         proc.vEnv.trigger = 1;
-        proc.createOscSeries();
+        proc.updateFreqs(proc.currentType);
+        proc.updateAmps(proc.currentType);
     }
     void stopNote (float velocity, bool allowTailOff)
     {

@@ -10,13 +10,18 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-SimpleFourierSynthAudioProcessorEditor::SimpleFourierSynthAudioProcessorEditor (SimpleFourierSynthAudioProcessor& p)
-    : AudioProcessorEditor (&p), audioProcessor (p)
+SimpleFourierSynthAudioProcessorEditor::SimpleFourierSynthAudioProcessorEditor(SimpleFourierSynthAudioProcessor& p, Oscilloscope* osc)
+    : AudioProcessorEditor (&p), audioProcessor(p)
 {
+    osc = &scope;
+    scope.setRepaintRate(16);
+    audioProcessor.editorScope = &scope;
+    scope.setNumChannels(2);
+    addAndMakeVisible(&scope);
+    audioProcessor.scopeSetup = true;
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize (800, 600);
-    
     addAndMakeVisible(&maSlider);
     maSlider.setSliderStyle(juce::Slider::Rotary);
     maSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 20);
@@ -106,6 +111,7 @@ SimpleFourierSynthAudioProcessorEditor::~SimpleFourierSynthAudioProcessorEditor(
 void SimpleFourierSynthAudioProcessorEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
+    //get data from the processor to the scope here
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
 
 
@@ -120,6 +126,8 @@ void SimpleFourierSynthAudioProcessorEditor::resized()
     mdSlider.setBounds(8 * n, n, 3 * n, 3 * n);
     msSlider.setBounds(13 * n, n, 3 * n, 3 * n);
     mrSlider.setBounds(18 * n, n, 3 * n, 3 * n);
+    
+    scope.setBounds(16 * n, 10 * n, 7 * n, 7 * n);
     
     vaSlider.setBounds(3 * n, 6 * n, 3 * n, 3 * n);
     vdSlider.setBounds(8 * n, 6 * n, 3 * n, 3 * n);
@@ -141,3 +149,4 @@ void SimpleFourierSynthAudioProcessorEditor::comboBoxChanged(juce::ComboBox* box
 {
     
 }
+

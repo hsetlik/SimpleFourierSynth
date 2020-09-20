@@ -33,6 +33,10 @@
             file="Source/FourierProcessor.cpp"/>
       <FILE id="KrAXU5" name="FourierProcessor.h" compile="0" resource="0"
             file="Source/FourierProcessor.h"/>
+      <FILE id="swvCTv" name="OscilloscopeComponent.cpp" compile="1" resource="0"
+            file="Source/OscilloscopeComponent.cpp"/>
+      <FILE id="al6012" name="OscilloscopeComponent.h" compile="0" resource="0"
+            file="Source/OscilloscopeComponent.h"/>
     </GROUP>
   </MAINGROUP>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>

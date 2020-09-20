@@ -16,16 +16,23 @@ class Oscillator
 public:
     Oscillator(float freq, float amp)
     {
+        newFreq(freq);
+        newAmp(amp);
+    }
+    maxiOsc osc;
+    float frequency = 0.0f;
+    float amplitude = 0.0f;
+    void newFreq(float freq)
+    {
         frequency = freq;
+    }
+    void newAmp(float amp)
+    {
         amplitude = amp;
     }
-    ~Oscillator() {}
-    maxiOsc osc;
-    float frequency;
-    float amplitude;
     double getOscSample()
     {
-        auto fullAmp = osc.sinewave(frequency);
+        double fullAmp = osc.sinewave(frequency);
         return fullAmp * amplitude;
     }
 };
@@ -34,10 +41,10 @@ class FSynthProcessor
 {
 public:
     enum seriesType
-        {
-            saw,
+        { //these have to be in the same order as the StringArray in the processor so the labels match
             square,
-            triangle
+            triangle,
+            saw
         };
     FSynthProcessor(int startingN, seriesType defaultType);
     ~FSynthProcessor(){}
@@ -45,21 +52,76 @@ public:
     {
         fundamental = newPitch;
     }
-    void createSquareOscs();
-    void updateSquareOvertones();
-    void createTriangleOscs();
-    void updateTriangleOvertones();
-    void createSawOscs();
-    void updateSawOvertones();
-    void createOscSeries();
-    void updateOscSeries();
-    void updateNumPartials();
+    void setType(seriesType newType)
+    {
+        currentType = newType;
+    }
+    void setN(int newN)
+    {
+        audPartials = newN;
+    }
+    void updateFreqs(seriesType alg)
+    {
+        if(oscs[0]->frequency != fundamental)
+        {
+        switch(alg)
+        {
+            case square:
+            {
+                squareFreqSeries();
+                break;
+            }
+            case triangle:
+            {
+                triangleFreqSeries();
+                break;
+            }
+            case saw:
+            {
+                sawFreqSeries();
+                break;
+            }
+        }
+        }
+    }
+    void triangleFreqSeries();
+    void sawFreqSeries();
+    void squareFreqSeries();
+    void updateAmps(seriesType alg)
+    {
+        if(oscs[0]->frequency != fundamental)
+        {
+        switch(alg)
+        {
+            case square:
+            {
+                squareAmpSeries();
+                break;
+            }
+            case triangle:
+            {
+                triangleAmpSeries();
+                break;
+            }
+            case saw:
+            {
+                sawAmpSeries();
+                break;
+            }
+        }
+        }
+    }
+    void triangleAmpSeries();
+    void sawAmpSeries();
+    void squareAmpSeries();
     double getSample();
     //data
+    int audPartials;
+    int maxPartials = 40;
     seriesType currentType;
-    int numPartials;
     double fundamental;
     maxiEnv mEnv;
     maxiEnv vEnv;
-    std::vector<Oscillator> oscs;
+    juce::OwnedArray<Oscillator> oscs;
+    //Oscillator statOscs[40];
 };

@@ -10,6 +10,7 @@
 
 #include <JuceHeader.h>
 #include "FourierSynthVoice.h"
+#include "OscilloscopeComponent.h"
 
 //==============================================================================
 /**
@@ -55,6 +56,8 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
     juce::AudioProcessorValueTreeState tree;
     FourierSynthVoice* thisVoice;
+    Oscilloscope* editorScope;
+    bool scopeSetup = false;
 private:
     juce::Synthesiser synth;
     

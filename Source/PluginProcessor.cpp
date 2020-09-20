@@ -57,9 +57,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout createLayout()
     juce::NormalisableRange<float> vsRange(1.0f, 20000.0f, 0.1f, 0.25f);
     layout.add(std::make_unique<juce::AudioParameterFloat>(vrId, vrName, vsRange, 150.0));
     
-    layout.add(std::make_unique<juce::AudioParameterChoice>(tcId, tcName, stArray, 0));
+    layout.add(std::make_unique<juce::AudioParameterChoice>(tcId, tcName, stArray, 1));
     
-    layout.add(std::make_unique<juce::AudioParameterFloat>(nCountId, nCountName, 1.0, 100.0, 10.0));
+    layout.add(std::make_unique<juce::AudioParameterFloat>(nCountId, nCountName, 1.0, 40.0, 10.0));
     
     return layout;
 }
@@ -189,8 +189,14 @@ bool SimpleFourierSynthAudioProcessor::isBusesLayoutSupported (const BusesLayout
 }
 #endif
 
+
 void SimpleFourierSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
+    if(scopeSetup)
+    {
+        editorScope->setBufferSize(24);
+        editorScope->setSamplesPerBlock(11);
+    }
     for(int i = 0; i < synth.getNumVoices(); ++i)
        {
            //yes that is supposed to be a single '='
@@ -210,8 +216,11 @@ void SimpleFourierSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& b
                    thisVoice->setSeriesType(tree.getRawParameterValue("typeChoice"));
            }
        }
+    
        buffer.clear();
        synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
+       if(scopeSetup)
+           editorScope->pushBuffer(buffer);
 }
 
 //==============================================================================
@@ -222,7 +231,7 @@ bool SimpleFourierSynthAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* SimpleFourierSynthAudioProcessor::createEditor()
 {
-    return new SimpleFourierSynthAudioProcessorEditor (*this);
+    return new SimpleFourierSynthAudioProcessorEditor (*this, editorScope);
 }
 
 //==============================================================================
