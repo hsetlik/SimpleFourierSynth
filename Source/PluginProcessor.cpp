@@ -41,16 +41,21 @@ juce::AudioProcessorValueTreeState::ParameterLayout createLayout()
     juce::String nCountId = "partialCount";
     juce::String nCountName = "Harmonic Number";
     
-    
-    layout.add(std::make_unique<juce::AudioParameterFloat>(maId, maName, 1.0, 20000.0, 20.0));
-    layout.add(std::make_unique<juce::AudioParameterFloat>(mdId, mdName, 1.0, 20000.0, 85.0));
+    juce::NormalisableRange<float> maRange(1.0f, 20000.0f, 0.1f, 0.25f);
+    layout.add(std::make_unique<juce::AudioParameterFloat>(maId, maName, maRange, 20.0));
+    juce::NormalisableRange<float> mdRange(1.0f, 20000.0f, 0.1f, 0.25f);
+    layout.add(std::make_unique<juce::AudioParameterFloat>(mdId, mdName, mdRange, 85.0));
     layout.add(std::make_unique<juce::AudioParameterFloat>(msId, msName, 0.0, 1.0, 0.6));
-    layout.add(std::make_unique<juce::AudioParameterFloat>(mrId, mrName, 1.0, 20000.0, 150.0));
+    juce::NormalisableRange<float> mrRange(1.0f, 20000.0f, 0.1f, 0.25f);
+    layout.add(std::make_unique<juce::AudioParameterFloat>(mrId, mrName, mrRange, 150.0));
     
-    layout.add(std::make_unique<juce::AudioParameterFloat>(vaId, vaName, 1.0, 20000.0, 20.0));
-    layout.add(std::make_unique<juce::AudioParameterFloat>(vdId, vdName, 1.0, 20000.0, 85.0));
+    juce::NormalisableRange<float> vaRange(1.0f, 20000.0f, 0.1f, 0.25f);
+    layout.add(std::make_unique<juce::AudioParameterFloat>(vaId, vaName, vaRange, 20.0));
+    juce::NormalisableRange<float> vdRange(1.0f, 20000.0f, 0.1f, 0.25f);
+    layout.add(std::make_unique<juce::AudioParameterFloat>(vdId, vdName, vdRange, 85.0));
     layout.add(std::make_unique<juce::AudioParameterFloat>(vsId, vsName, 0.0, 1.0, 0.6));
-    layout.add(std::make_unique<juce::AudioParameterFloat>(vrId, vrName, 1.0, 20000.0, 150.0));
+    juce::NormalisableRange<float> vsRange(1.0f, 20000.0f, 0.1f, 0.25f);
+    layout.add(std::make_unique<juce::AudioParameterFloat>(vrId, vrName, vsRange, 150.0));
     
     layout.add(std::make_unique<juce::AudioParameterChoice>(tcId, tcName, stArray, 0));
     
