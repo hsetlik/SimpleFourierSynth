@@ -25,9 +25,9 @@ void FSynthProcessor::createSquareOscs()
     for(int i = 0; i < 100; ++i)
     {
         auto fFactor = (2 * i) + 1;
-        Oscillator* newOsc = new Oscillator;
-        newOsc->frequency = fundamental * fFactor;
-        newOsc->amplitude = 1 / fFactor;
+        auto frequency = fundamental * fFactor;
+        auto amplitude = (float)(1 / fFactor);
+        Oscillator* newOsc = new Oscillator(frequency, amplitude);
         oscs.push_back(*newOsc);
     }
 }
@@ -38,7 +38,7 @@ void FSynthProcessor::updateSquareOvertones()
     {
         auto fFactor = (2 * i) + 1;
         oscs[i].frequency = (fundamental * fFactor);
-        oscs[i].amplitude = 1 / fFactor;
+        oscs[i].amplitude = (float)(1.0f / fFactor);
     }
     
 }
@@ -48,9 +48,9 @@ void FSynthProcessor::createTriangleOscs()
     for(int i = 0; i < 100; ++i)
     {
         auto fFactor = (2 * i) + 1;
-        Oscillator* newOsc = new Oscillator;
-        newOsc->frequency = fFactor * fundamental;
-        newOsc->amplitude = pow(-1, i) / pow(fFactor, 2);
+        auto frequency = fFactor * fundamental;
+        auto amplitude = pow(-1.0f, i) / pow(fFactor, 2.0f);
+        Oscillator* newOsc = new Oscillator(frequency, amplitude);
         oscs.push_back(*newOsc);
     }
     
@@ -70,9 +70,9 @@ void FSynthProcessor::createSawOscs()
     oscs.clear();
     for(int i = 0; i < 100; ++i)
     {
-        Oscillator* newOsc = new Oscillator;
-        newOsc->frequency = i * fundamental;
-        newOsc->amplitude = 1 / (2 * i);
+        auto frequency = i * fundamental;
+        auto amplitude = 1 / ((2 * i) + 1);
+        Oscillator* newOsc = new Oscillator(frequency, amplitude);
         oscs.push_back(*newOsc);
     }
     
@@ -83,25 +83,33 @@ void FSynthProcessor::updateSawOvertones()
     for(int i = 0; i < oscCount; ++i)
     {
         oscs[i].frequency = i * fundamental;
-        oscs[i].amplitude = 1 / (2 * i);
+        oscs[i].amplitude = 1 / ((2 * i) + 1);
     }
     
 }
 void FSynthProcessor::createOscSeries()
 {
-    if(oscs.size() == 0) //call this for each sample but only create a new series if there are no oscillators yet
+    if(oscs.size() < 1) //call this for each sample but only create a new series if there are no oscillators yet
     {
         switch(currentType)
         {
             case saw:
+            {
                 createSawOscs();
+                break;
+            }
             case square:
+            {
                 createSquareOscs();
+                break;
+            }
             case triangle:
+            {
                 createTriangleOscs();
+                break;
+            }
         }
     }
-    
 }
 
 void FSynthProcessor::updateOscSeries()
@@ -111,11 +119,20 @@ void FSynthProcessor::updateOscSeries()
         switch(currentType)
         {
             case square:
+            {
                 updateSquareOvertones();
+                break;
+            }
             case saw:
+            {
                 updateSawOvertones();
+                break;
+            }
             case triangle:
+            {
                 updateTriangleOvertones();
+                break;
+            }
         }
     }
 }
@@ -129,5 +146,6 @@ double FSynthProcessor::getSample()
         double newVal = oscs[i].getOscSample();
         output += newVal;
     }
-    return output;
+    double postEnv = vEnv.adsr(output, vEnv.trigger);
+    return postEnv;
 }

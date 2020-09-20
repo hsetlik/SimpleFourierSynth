@@ -11,8 +11,15 @@
 #pragma once
 #include <JuceHeader.h>
 #include "maximilian.h"
-struct Oscillator
+class Oscillator
 {
+public:
+    Oscillator(float freq, float amp)
+    {
+        frequency = freq;
+        amplitude = amp;
+    }
+    ~Oscillator() {}
     maxiOsc osc;
     float frequency;
     float amplitude;
@@ -25,13 +32,13 @@ struct Oscillator
 
 class FSynthProcessor
 {
-enum seriesType
-    {
-        saw,
-        square,
-        triangle
-    };
 public:
+    enum seriesType
+        {
+            saw,
+            square,
+            triangle
+        };
     FSynthProcessor(int startingN, seriesType defaultType);
     ~FSynthProcessor(){}
     void setPitch(double newPitch)
@@ -46,6 +53,7 @@ public:
     void updateSawOvertones();
     void createOscSeries();
     void updateOscSeries();
+    void updateNumPartials();
     double getSample();
     //data
     seriesType currentType;
