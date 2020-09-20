@@ -49,6 +49,9 @@ private:
     
     juce::ComboBox typeChoice;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> typeChoiceAttach;
+    
+    juce::Slider nSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> nSliderAttach;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SimpleFourierSynthAudioProcessorEditor)
 };

@@ -11,67 +11,47 @@
 #pragma once
 #include <JuceHeader.h>
 #include "maximilian.h"
-
-class Partial
+struct Oscillator
 {
-public:
-    Partial(int ind, float startFreq, float startAmplitude)
-    {
-        pIndex = ind;
-        frequency = startFreq;
-        amplitude = startAmplitude;
-    }
-    ~Partial() {}
-    void setFrequency(float newFrequency)
-    {
-        frequency = newFrequency;
-    }
-    void setAmplitude(float newAmplitude)
-    {
-        amplitude = newAmplitude;
-    }
-    float getSample()
-    {
-        float oscSample = oscillator.sinewave(frequency);
-        return oscSample * amplitude;
-    }
-    int pIndex;
+    maxiOsc osc;
     float frequency;
     float amplitude;
-    maxiOsc oscillator;
-    juce::String idString;
+    double getOscSample()
+    {
+        auto fullAmp = osc.sinewave(frequency);
+        return fullAmp * amplitude;
+    }
 };
 
-class Series
+class FSynthProcessor
 {
-public:
-    enum seriesType
+enum seriesType
     {
+        saw,
         square,
-        triangle,
-        saw
+        triangle
     };
-    //functions
-    Series(int startingNumPartials, seriesType type);
-    ~Series() {}
-    void createSquarePartials();
-    void createSawPartials();
-    void createTrianglePartials();
-    void setPitch(double pitch)
+public:
+    FSynthProcessor(int startingN, seriesType defaultType);
+    ~FSynthProcessor(){}
+    void setPitch(double newPitch)
     {
-        fundamental = pitch;
+        fundamental = newPitch;
     }
-    void setNumPartials(int newN)
-    {
-        numPartials = newN;
-    }
-    double getSampleFromSeries();
+    void createSquareOscs();
+    void updateSquareOvertones();
+    void createTriangleOscs();
+    void updateTriangleOvertones();
+    void createSawOscs();
+    void updateSawOvertones();
+    void createOscSeries();
+    void updateOscSeries();
+    double getSample();
     //data
-    float fundamental;
     seriesType currentType;
-    maxiEnv modEnv;
-    maxiEnv volEnv;
     int numPartials;
-    std::vector<Partial> currentPartials;
-    
+    double fundamental;
+    maxiEnv mEnv;
+    maxiEnv vEnv;
+    std::vector<Oscillator> oscs;
 };

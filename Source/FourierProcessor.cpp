@@ -11,60 +11,123 @@
 #include "FourierProcessor.h"
 
 
-Series::Series(int startingNumPartials, seriesType type)
+FSynthProcessor::FSynthProcessor(int startingN, seriesType defaultType)
 {
-    numPartials = startingNumPartials;
-    currentType = type;
+    numPartials = startingN;
+    currentType = defaultType;
+    
 }
 
 
-void Series::createSawPartials()
+void FSynthProcessor::createSquareOscs()
 {
-    currentPartials.clear();
-    Partial* fundPartial = new Partial(1, fundamental, 1.0);
-    currentPartials.push_back(*fundPartial);
-    for(int i = 2; i < numPartials; ++i)
+    oscs.clear();
+    for(int i = 0; i < 100; ++i)
     {
-        Partial* newPartial = new Partial(i, fundamental * i, 1.0 / i);
-        currentPartials.push_back(*newPartial);
+        auto fFactor = (2 * i) + 1;
+        Oscillator* newOsc = new Oscillator;
+        newOsc->frequency = fundamental * fFactor;
+        newOsc->amplitude = 1 / fFactor;
+        oscs.push_back(*newOsc);
     }
 }
-
-void Series::createSquarePartials()
+void FSynthProcessor::updateSquareOvertones()
 {
-    currentPartials.clear();
-    Partial* fundPartial = new Partial(1, fundamental, 1.0);
-    currentPartials.push_back(*fundPartial);
-    int squarePartials = numPartials * 2;
-    for(int i = 2; i < squarePartials; ++i)
+    auto oscCount = oscs.size();
+    for(int i = 0; i < oscCount; ++i)
     {
-        if(i % 2 != 0)
+        auto fFactor = (2 * i) + 1;
+        oscs[i].frequency = (fundamental * fFactor);
+        oscs[i].amplitude = 1 / fFactor;
+    }
+    
+}
+void FSynthProcessor::createTriangleOscs()
+{
+    oscs.clear();
+    for(int i = 0; i < 100; ++i)
+    {
+        auto fFactor = (2 * i) + 1;
+        Oscillator* newOsc = new Oscillator;
+        newOsc->frequency = fFactor * fundamental;
+        newOsc->amplitude = pow(-1, i) / pow(fFactor, 2);
+        oscs.push_back(*newOsc);
+    }
+    
+}
+void FSynthProcessor::updateTriangleOvertones()
+{
+    auto oscCount = oscs.size();
+    for(int i = 0; i < oscCount; ++i)
+    {
+        auto fFactor = (2 * i) + 1;
+        oscs[i].frequency = fundamental * fFactor;
+        oscs[i].amplitude = pow(-1 , i) * pow(fFactor, 2);
+    }
+}
+void FSynthProcessor::createSawOscs()
+{
+    oscs.clear();
+    for(int i = 0; i < 100; ++i)
+    {
+        Oscillator* newOsc = new Oscillator;
+        newOsc->frequency = i * fundamental;
+        newOsc->amplitude = 1 / (2 * i);
+        oscs.push_back(*newOsc);
+    }
+    
+}
+void FSynthProcessor::updateSawOvertones()
+{
+    auto oscCount = oscs.size();
+    for(int i = 0; i < oscCount; ++i)
+    {
+        oscs[i].frequency = i * fundamental;
+        oscs[i].amplitude = 1 / (2 * i);
+    }
+    
+}
+void FSynthProcessor::createOscSeries()
+{
+    if(oscs.size() == 0) //call this for each sample but only create a new series if there are no oscillators yet
+    {
+        switch(currentType)
         {
-        Partial* newPartial = new Partial(i, fundamental * i, 1.0 / i);
-        currentPartials.push_back(*newPartial);
+            case saw:
+                createSawOscs();
+            case square:
+                createSquareOscs();
+            case triangle:
+                createTriangleOscs();
+        }
+    }
+    
+}
+
+void FSynthProcessor::updateOscSeries()
+{
+    if(oscs.size() != 0)
+    {
+        switch(currentType)
+        {
+            case square:
+                updateSquareOvertones();
+            case saw:
+                updateSawOvertones();
+            case triangle:
+                updateTriangleOvertones();
         }
     }
 }
-
-void Series::createTrianglePartials()
+double FSynthProcessor::getSample()
 {
-    currentPartials.clear();
+    double output = 0.0f;
+    createOscSeries();
+    updateOscSeries();
     for(int i = 0; i < numPartials; ++i)
     {
-        float mode = (2 * i) + 1;
-        float newAmplitude = pow(-1, i) * pow(mode, 2);
-        float newFrequency = fundamental * mode;
-        Partial* newPartial = new Partial(i, newFrequency, newAmplitude);
-        currentPartials.push_back(*newPartial);
+        double newVal = oscs[i].getOscSample();
+        output += newVal;
     }
-}
-
-double Series::getSampleFromSeries()
-{
-    double newSample = 0.0f;
-    for(int i = 0; i < numPartials; ++i)
-    {
-        newSample += currentPartials[i].getSample();
-    }
-    return newSample;
+    return output;
 }

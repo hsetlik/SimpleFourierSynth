@@ -38,6 +38,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout createLayout()
     stArray.add("Triangle Wave");
     stArray.add("Saw Wave");
     
+    juce::String nCountId = "partialCount";
+    juce::String nCountName = "Harmonic Number";
+    
+    
     layout.add(std::make_unique<juce::AudioParameterFloat>(maId, maName, 1.0, 20000.0, 20.0));
     layout.add(std::make_unique<juce::AudioParameterFloat>(mdId, mdName, 1.0, 20000.0, 85.0));
     layout.add(std::make_unique<juce::AudioParameterFloat>(msId, msName, 0.0, 1.0, 0.6));
@@ -49,6 +53,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout createLayout()
     layout.add(std::make_unique<juce::AudioParameterFloat>(vrId, vrName, 1.0, 20000.0, 150.0));
     
     layout.add(std::make_unique<juce::AudioParameterChoice>(tcId, tcName, stArray, 0));
+    
+    layout.add(std::make_unique<juce::AudioParameterFloat>(nCountId, nCountName, 1.0, 100.0, 10.0));
     
     return layout;
 }
@@ -66,6 +72,13 @@ SimpleFourierSynthAudioProcessor::SimpleFourierSynthAudioProcessor()
                        ), tree(*this, nullptr, "ALLPARAMETERS", createLayout())
 #endif
 {
+    //six voice polyphony
+    for(int i = 0; i < 6; ++i)
+    {
+        synth.addVoice(new FourierSynthVoice());
+    }
+    synth.clearSounds();
+    synth.addSound(new FourierSound());
 }
 
 SimpleFourierSynthAudioProcessor::~SimpleFourierSynthAudioProcessor()
@@ -173,31 +186,27 @@ bool SimpleFourierSynthAudioProcessor::isBusesLayoutSupported (const BusesLayout
 
 void SimpleFourierSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
-    juce::ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
-    auto totalNumOutputChannels = getTotalNumOutputChannels();
-
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
-    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
-
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer (channel);
-
-        // ..do something to the data...
-    }
+    for(int i = 0; i < synth.getNumVoices(); ++i)
+       {
+           //yes that is supposed to be a single '='
+           if((thisVoice =  dynamic_cast<FourierSynthVoice*>(synth.getVoice(i))))
+           {
+                   thisVoice->setMAttack(tree.getRawParameterValue("mAttack"));
+                   thisVoice->setMDecay(tree.getRawParameterValue("mDecay"));
+                   thisVoice->setMSustain(tree.getRawParameterValue("mSustain"));
+                   thisVoice->setMRelease(tree.getRawParameterValue("mRelease"));
+                   
+                   thisVoice->setVAttack(tree.getRawParameterValue("vAttack"));
+                   thisVoice->setVDecay(tree.getRawParameterValue("vDecay"));
+                   thisVoice->setVSustain(tree.getRawParameterValue("vSustain"));
+                   thisVoice->setVRelease(tree.getRawParameterValue("vRelease"));
+                   
+                   thisVoice->setNumPartials(tree.getRawParameterValue("partialCount"));
+                   thisVoice->setSeriesType(tree.getRawParameterValue("typeChoice"));
+           }
+       }
+       buffer.clear();
+       synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 }
 
 //==============================================================================

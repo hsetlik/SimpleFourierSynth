@@ -9,6 +9,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "FourierSynthVoice.h"
 
 //==============================================================================
 /**
@@ -53,6 +54,7 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
     juce::AudioProcessorValueTreeState tree;
+    FourierSynthVoice* thisVoice;
 private:
     juce::Synthesiser synth;
     
