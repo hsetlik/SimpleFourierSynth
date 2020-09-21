@@ -194,8 +194,8 @@ void SimpleFourierSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& b
 {
     if(scopeSetup)
     {
-        editorScope->setBufferSize(24);
         editorScope->setSamplesPerBlock(11);
+        editorScope->setBufferSize(24);
     }
     for(int i = 0; i < synth.getNumVoices(); ++i)
        {
