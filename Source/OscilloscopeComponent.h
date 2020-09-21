@@ -11,49 +11,69 @@
 #pragma once
 #include <JuceHeader.h>
 
-class Oscilloscope : public juce::AudioVisualiserComponent
+class ScopeSource
 {
 public:
-    Oscilloscope() : juce::AudioVisualiserComponent(1)
+    ScopeSource()
     {
-        setBufferSize(45);
-        setSamplesPerBlock(100);
-        setColours(bkgndColor, wvColor);
+        
     }
-    void getChannelAsLine (juce::Path& path, const juce::Range<float>* levels,
-                           int numLevels, int nextSample)
+    ~ScopeSource() {}
+    void addSampleToBlock(float newSample)
     {
-        path.preallocateSpace (4 * numLevels + 8);
-
-        for (int i = 0; i < numLevels; ++i)
+        blockSamples.push_back(newSample);
+        if(blockSamples.size() >= samplesPerBlock)
         {
-            auto level = -(levels[(nextSample + i) % numLevels].getEnd());
-
-            if (i == 0)
-                path.startNewSubPath (0.0f, level);
-            else
-                path.lineTo ((float) i, level);
+            addBlockToFrame();
+            blockSamples.clear();
         }
-        path.lineTo((float)(numLevels), (float)getWidth());
-        /*
-        for (int i = numLevels; --i >= 0;)
-            path.lineTo ((float) i, -(levels[(nextSample + i) % numLevels].getStart()));
-         */
-        path.closeSubPath();
     }
-    void paintChannel (juce::Graphics& g, juce::Rectangle<float> area, const juce::Range<float>* levels, int numLevels, int nextSample) override
+    void addBlockToFrame()
     {
-        juce::Path p;
-        getChannelAsLine(p, levels, numLevels, nextSample);
-        juce::PathStrokeType strokeType = juce::PathStrokeType(1.0f);
-
-        g.strokePath(p, strokeType, juce::AffineTransform::fromTargetPoints (0.0f, -1.0f,               area.getX(), area.getY(),
-                                                          0.0f, 1.0f,                area.getX(), area.getBottom(),
-                                                          (float) numLevels, -1.0f,  area.getRight(), area.getY()));
+        double sum = 0.0f;
+        for(auto i : blockSamples)
+        {
+            sum += blockSamples[i];
+        }
+        float blockToAdd = (sum / blockSamples.size());
+        workingFrameBlocks.push_back(blockToAdd);
+        if(workingFrameBlocks.size() == blocksPerFrameWidth)
+        {
+            workingFrameBlocks.pop_front();
+            frameBlocks = workingFrameBlocks;
+        }
     }
-                    
-
+    void setSizes(int spb, int bpf)
+    {
+        samplesPerBlock = spb;
+        blocksPerFrameWidth = bpf;
+    }
+    std::deque<float> workingFrameBlocks;
+    std::deque<float> frameBlocks;
+    double voiceFundamental;
+    double processorSampleRate;
 private:
+    std::vector<float> blockSamples;
+    int samplesPerBlock;
+    int blocksPerFrameWidth;
+    
+};
+
+
+class Oscilloscope : public juce::Timer, public juce::Component
+{
+public:
+    Oscilloscope(ScopeSource* src);
+    ~Oscilloscope() {};
+    void scaleFrameToHz(float fundamental, double sampleRate);
+    void resized() override;
+    void timerCallback() override;
+    void paint(juce::Graphics& g) override;
+    float getYPosFromLevel(float level, float aHeight);
+private:
+    int samplesPerBlock;
+    int blocksPerFrameWidth;
+    ScopeSource* source;
     juce::Colour bkgndColor = juce::Colours::darkgrey;
     juce::Colour wvColor = juce::Colours::orange;
 };

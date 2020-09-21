@@ -18,7 +18,7 @@
 class SimpleFourierSynthAudioProcessorEditor  : public juce::AudioProcessorEditor, public juce::Slider::Listener, public juce::ComboBox::Listener
 {
 public:
-    SimpleFourierSynthAudioProcessorEditor (SimpleFourierSynthAudioProcessor& proc, Oscilloscope* osc);
+    SimpleFourierSynthAudioProcessorEditor (SimpleFourierSynthAudioProcessor& proc);
     ~SimpleFourierSynthAudioProcessorEditor() override;
 
     //==============================================================================

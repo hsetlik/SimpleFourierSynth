@@ -10,15 +10,11 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-SimpleFourierSynthAudioProcessorEditor::SimpleFourierSynthAudioProcessorEditor(SimpleFourierSynthAudioProcessor& p, Oscilloscope* osc)
-    : AudioProcessorEditor (&p), audioProcessor(p)
+SimpleFourierSynthAudioProcessorEditor::SimpleFourierSynthAudioProcessorEditor(SimpleFourierSynthAudioProcessor& p)
+    : AudioProcessorEditor (&p), audioProcessor(p), scope(&audioProcessor.scopeSource)
 {
-    osc = &scope;
-    scope.setRepaintRate(16);
-    audioProcessor.editorScope = &scope;
-    scope.setNumChannels(2);
     addAndMakeVisible(&scope);
-    audioProcessor.scopeSetup = true;
+    
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize (800, 600);

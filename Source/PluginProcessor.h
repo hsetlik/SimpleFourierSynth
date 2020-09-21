@@ -57,6 +57,7 @@ public:
     juce::AudioProcessorValueTreeState tree;
     FourierSynthVoice* thisVoice;
     Oscilloscope* editorScope;
+    ScopeSource scopeSource;
     bool scopeSetup = false;
 private:
     juce::Synthesiser synth;

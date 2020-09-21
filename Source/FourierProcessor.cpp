@@ -87,5 +87,6 @@ double FSynthProcessor::getSample()
         sum += oscs[i]->getOscSample();
     }
     auto postEnv = vEnv.adsr(sum, vEnv.trigger);
+    lastVoiceSample = postEnv;
     return postEnv;
 }

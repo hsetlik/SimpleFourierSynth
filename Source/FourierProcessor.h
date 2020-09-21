@@ -51,6 +51,8 @@ public:
     void setPitch(double newPitch)
     {
         fundamental = newPitch;
+        if(fundamental!= 0.0f)
+            lastFundamental = fundamental;
     }
     void setType(seriesType newType)
     {
@@ -115,11 +117,13 @@ public:
     void sawAmpSeries();
     void squareAmpSeries();
     double getSample();
+    double lastVoiceSample;
     //data
     int audPartials;
     int maxPartials = 40;
     seriesType currentType;
     double fundamental;
+    double lastFundamental;
     maxiEnv mEnv;
     maxiEnv vEnv;
     juce::OwnedArray<Oscillator> oscs;
