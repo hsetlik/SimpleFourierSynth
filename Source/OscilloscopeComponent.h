@@ -1,61 +1,60 @@
-/*
-  ==============================================================================
 
-    OscilloscopeComponent.h
-    Created: 20 Sep 2020 2:07:44pm
-    Author:  Hayden Setlik
 
-  ==============================================================================
-*/
 
 #pragma once
 #include <JuceHeader.h>
 
-class Oscilloscope : public juce::AudioVisualiserComponent
+class ScopeSource
 {
 public:
-    Oscilloscope() : juce::AudioVisualiserComponent(1)
+    //functions
+    ScopeSource()
     {
-        setBufferSize(45);
-        setSamplesPerBlock(100);
-        setColours(bkgndColor, wvColor);
     }
-    void getChannelAsLine (juce::Path& path, const juce::Range<float>* levels,
-                           int numLevels, int nextSample)
+    ~ScopeSource()
     {
-        path.preallocateSpace (4 * numLevels + 8);
-
-        for (int i = 0; i < numLevels; ++i)
-        {
-            auto level = -(levels[(nextSample + i) % numLevels].getEnd());
-
-            if (i == 0)
-                path.startNewSubPath (0.0f, level);
-            else
-                path.lineTo ((float) i, level);
-        }
-        path.lineTo((float)(numLevels), (float)getWidth());
-        /*
-        for (int i = numLevels; --i >= 0;)
-            path.lineTo ((float) i, -(levels[(nextSample + i) % numLevels].getStart()));
-         */
-        path.closeSubPath();
+        outputBuffersThisFrame.clear();
     }
-    void paintChannel (juce::Graphics& g, juce::Rectangle<float> area, const juce::Range<float>* levels, int numLevels, int nextSample) override
+    void add(juce::AudioBuffer<float>& buffer)
     {
-        juce::Path p;
-        getChannelAsLine(p, levels, numLevels, nextSample);
-        juce::PathStrokeType strokeType = juce::PathStrokeType(1.0f);
-
-        g.strokePath(p, strokeType, juce::AffineTransform::fromTargetPoints (0.0f, -1.0f,               area.getX(), area.getY(),
-                                                          0.0f, 1.0f,                area.getX(), area.getBottom(),
-                                                          (float) numLevels, -1.0f,  area.getRight(), area.getY()));
+        auto newBuffer = buffer;
+        bufferSize = buffer.getNumSamples();
+        outputBuffersThisFrame.push_back(newBuffer);
     }
-                    
-
-private:
-    juce::Colour bkgndColor = juce::Colours::darkgrey;
-    juce::Colour wvColor = juce::Colours::orange;
+    //data
+    double sampleRate;
+    int bufferSize;
+    float fundamental;
+    std::deque<juce::AudioBuffer<float>> outputBuffersThisFrame; //remember to clear this at the end of each frame
+    
 };
 
-
+class ScopeComponent : public juce::Component, public juce::Timer
+{
+public:
+    //functions
+    ScopeComponent(ScopeSource* src);
+    ~ScopeComponent()
+    {
+        buffersToDraw.clear();
+    }
+    void paint(juce::Graphics& g) override;
+    void setFrameLength();
+    void timerCallback() override
+    {
+        setFrameLength();
+        repaint();
+    }
+    //data
+    bool frameReady = false;
+    int pointsPerBuffer; //this can be set as a constant to control resolution
+    int iBuffersPerFrame; //this should be adjusted to the frequency
+    float fBuffersPerFrame;
+    int totalBuffersToLoad;
+    float currentFundamental;
+    double samplesPerFrame;
+    double samplesPerPoint;
+    
+    ScopeSource* source;
+    std::deque<juce::AudioBuffer<float>> buffersToDraw;
+};

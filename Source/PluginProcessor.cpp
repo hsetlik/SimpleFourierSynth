@@ -192,11 +192,7 @@ bool SimpleFourierSynthAudioProcessor::isBusesLayoutSupported (const BusesLayout
 
 void SimpleFourierSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
-    if(scopeSetup)
-    {
-        editorScope->setSamplesPerBlock(11);
-        editorScope->setBufferSize(24);
-    }
+    
     for(int i = 0; i < synth.getNumVoices(); ++i)
        {
            //yes that is supposed to be a single '='
@@ -214,13 +210,14 @@ void SimpleFourierSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& b
                    
                    thisVoice->setNumPartials(tree.getRawParameterValue("partialCount"));
                    thisVoice->setSeriesType(tree.getRawParameterValue("typeChoice"));
+                   if(thisVoice->isVoiceActive())
+                       scopeSource.fundamental = thisVoice->proc.fundamental;
            }
        }
-    
+       scopeSource.add(buffer);
+    scopeSource.sampleRate = getSampleRate();
        buffer.clear();
        synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
-       if(scopeSetup)
-           editorScope->pushBuffer(buffer);
 }
 
 //==============================================================================
@@ -231,7 +228,7 @@ bool SimpleFourierSynthAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* SimpleFourierSynthAudioProcessor::createEditor()
 {
-    return new SimpleFourierSynthAudioProcessorEditor (*this, editorScope);
+    return new SimpleFourierSynthAudioProcessorEditor (*this);
 }
 
 //==============================================================================

@@ -56,8 +56,7 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
     juce::AudioProcessorValueTreeState tree;
     FourierSynthVoice* thisVoice;
-    Oscilloscope* editorScope;
-    bool scopeSetup = false;
+    ScopeSource scopeSource;
 private:
     juce::Synthesiser synth;
     

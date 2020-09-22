@@ -10,18 +10,16 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-SimpleFourierSynthAudioProcessorEditor::SimpleFourierSynthAudioProcessorEditor(SimpleFourierSynthAudioProcessor& p, Oscilloscope* osc)
-    : AudioProcessorEditor (&p), audioProcessor(p)
+SimpleFourierSynthAudioProcessorEditor::SimpleFourierSynthAudioProcessorEditor(SimpleFourierSynthAudioProcessor& p)
+    : AudioProcessorEditor (&p), audioProcessor(p), scope(&audioProcessor.scopeSource)
 {
-    osc = &scope;
-    scope.setRepaintRate(16);
-    audioProcessor.editorScope = &scope;
-    scope.setNumChannels(2);
-    addAndMakeVisible(&scope);
-    audioProcessor.scopeSetup = true;
+    
+   
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize (800, 600);
+    addAndMakeVisible(&scope);
+    
     addAndMakeVisible(&maSlider);
     maSlider.setSliderStyle(juce::Slider::Rotary);
     maSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 20);
@@ -127,7 +125,7 @@ void SimpleFourierSynthAudioProcessorEditor::resized()
     msSlider.setBounds(13 * n, n, 3 * n, 3 * n);
     mrSlider.setBounds(18 * n, n, 3 * n, 3 * n);
     
-    scope.setBounds(16 * n, 10 * n, 7 * n, 7 * n);
+    
     
     vaSlider.setBounds(3 * n, 6 * n, 3 * n, 3 * n);
     vdSlider.setBounds(8 * n, 6 * n, 3 * n, 3 * n);
@@ -136,6 +134,7 @@ void SimpleFourierSynthAudioProcessorEditor::resized()
     
     nSlider.setBounds(3 * n, 11 * n, 10 * n, 2 * n);
     
+    scope.setBounds(16 * n, 10 * n, 7 * n, 7 * n);
     typeChoice.setBounds(3 * n, 14 * n, 6 * n, 2 * n);
     
 }

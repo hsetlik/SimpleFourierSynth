@@ -18,7 +18,7 @@
 class SimpleFourierSynthAudioProcessorEditor  : public juce::AudioProcessorEditor, public juce::Slider::Listener, public juce::ComboBox::Listener
 {
 public:
-    SimpleFourierSynthAudioProcessorEditor (SimpleFourierSynthAudioProcessor& proc, Oscilloscope* osc);
+    SimpleFourierSynthAudioProcessorEditor (SimpleFourierSynthAudioProcessor& proc);
     ~SimpleFourierSynthAudioProcessorEditor() override;
 
     //==============================================================================
@@ -54,6 +54,6 @@ private:
     juce::Slider nSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> nSliderAttach;
 
-    Oscilloscope scope;
+    ScopeComponent scope;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SimpleFourierSynthAudioProcessorEditor)
 };
