@@ -22,7 +22,7 @@ void ScopeComponent::setFrameLength()
     int samplesPerBuffer = source->bufferSize;
     double sampleRate = source->sampleRate;
     currentFundamental = source->fundamental;
-    samplesPerFrame = 4 * (sampleRate + 1) / ((currentFundamental) + 1);
+    samplesPerFrame = 8 * (sampleRate + 1) / ((currentFundamental) + 1);
     iBuffersPerFrame = (int)(samplesPerFrame / samplesPerBuffer);
     fBuffersPerFrame = (float)(samplesPerFrame / samplesPerBuffer);
     totalBuffersToLoad = iBuffersPerFrame + 2;
@@ -36,15 +36,16 @@ void ScopeComponent::paint(juce::Graphics &g)
     if(frameReady)
     {
         buffersToDraw = source->outputBuffersThisFrame;
-        source->outputBuffersThisFrame.clear();
+        source->storedBufferLimit = ceil(fBuffersPerFrame);
         std::vector<float> pointYValues;
         int indexInBuffer = 0;
         juce::AudioBuffer<float>* currentBuffer;
             if(buffersToDraw.size() >= iBuffersPerFrame)
             {
-            for(int i = 0; i < ceil(fBuffersPerFrame); ++i)
+            for(int i = 0; i < floor(fBuffersPerFrame); ++i)
             {
-                currentBuffer = &buffersToDraw[i];
+                auto newBuffer = juce::AudioBuffer<float>(buffersToDraw[i]);
+                currentBuffer = &newBuffer;
                 indexInBuffer = 0;
                 samplesPerPoint = (currentBuffer->getNumSamples() / pointsPerBuffer);
                 
@@ -53,7 +54,7 @@ void ScopeComponent::paint(juce::Graphics &g)
                     double sum = 0.0f;
                     for(int n = 0; n < samplesPerPoint; ++n)
                     {
-                        sum += currentBuffer->getSample(0, indexInBuffer);
+                        sum += currentBuffer->getSample(0, k);
                         ++indexInBuffer;
                     }
                   

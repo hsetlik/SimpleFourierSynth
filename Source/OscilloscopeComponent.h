@@ -20,11 +20,14 @@ public:
         auto newBuffer = buffer;
         bufferSize = buffer.getNumSamples();
         outputBuffersThisFrame.push_back(newBuffer);
+        if(outputBuffersThisFrame.size() == storedBufferLimit)
+            outputBuffersThisFrame.clear();
     }
     //data
     double sampleRate;
     int bufferSize;
     float fundamental;
+    int storedBufferLimit;
     std::deque<juce::AudioBuffer<float>> outputBuffersThisFrame; //remember to clear this at the end of each frame
     
 };
